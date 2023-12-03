@@ -8,19 +8,20 @@ use CRUDServices\FilesOperationsHandlers\FilesUploadingHandler\FilesUploadingHan
 use CRUDServices\FilesOperationsHandlers\OldFilesDeletingHandler\OldFilesDeletingHandler;
 use CRUDServices\Traits\CRUDCustomisationGeneralHooks;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 
 abstract class CRUDService
 {
     use CRUDCustomisationGeneralHooks;
 
     protected FilesHandler | FilesUploadingHandler | OldFilesDeletingHandler | null $filesHandler = null;
-    protected ?BaseModel $Model ;
+    protected ?Model $Model ;
 
     /**
-     * @param BaseModel|null $Model
+     * @param Model|null $Model
      * @return $this
      */
-    public function setModel(?BaseModel $Model): self
+    public function setModel(?Model $Model): self
     {
         $this->Model = $Model;
         return $this;
