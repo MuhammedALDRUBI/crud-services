@@ -17,7 +17,7 @@ class FileFullPathsHandler extends FilePathsHandler
     protected function processSingleFileName(  string $fileName) : string
     {
         return $fileName ?
-                         CustomFileHandler::getFileAssetDownloadingLink( $this->model->getDocumentsStorageFolderName() . "FileFullPathsHandler.php/" . $fileName )
+                         CustomFileHandler::getFileAssetDownloadingLink( $this->model->getDocumentsStorageFolderName() . "/" . $fileName )
                          : "";
     }
 
