@@ -22,7 +22,7 @@ trait FilesInfoValidationMethods
      */
     protected function prepareModelOldFileForDeleting(string $RequestKeyName , array $fileInfoArray) : bool
     {
-        if(array_key_exists($RequestKeyName , $this->dataRow) && is_null($this->dataRow[$RequestKeyName] ))
+        if(is_null($this->dataRow[$RequestKeyName] ))
         {
             $this->initOldFilesDeletingHandler()->prepareModelOldFilesToDelete($this->model , [$fileInfoArray]);
             $this->setDataRowFileOriginalName($RequestKeyName , null);
@@ -55,6 +55,7 @@ trait FilesInfoValidationMethods
          * And Will Be Considered as An Old File Deleting 's Request To Delete The model's file described by this fileInfoArray
          */
         $RequestKeyName = $fileInfoArray["RequestKeyName"];
+        if(!array_key_exists($RequestKeyName , $this->dataRow)) { return false; }
         if(!$this->prepareModelOldFileForDeleting($RequestKeyName , $fileInfoArray)
             ||
             !$this->avoidFileChanging($RequestKeyName ) ){return false;}
