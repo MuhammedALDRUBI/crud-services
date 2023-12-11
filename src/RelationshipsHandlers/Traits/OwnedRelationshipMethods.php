@@ -77,8 +77,15 @@ trait OwnedRelationshipMethods
      */
     protected function HandleOwnedRelationshipRows( Model $model , OwnedRelationshipComponent $relationship , array $dataRow ) : self
     {
-        $relationshipRows = $this->getRelationshipRequestData($dataRow , $relationship->getRelationshipName());
-        $this->OwnedRelationshipRowsChildClassHandling($model , $relationship , $relationshipRows );
+        $relationshipName =  $relationship->getRelationshipName();
+        if($this->checkIfRelationshipDataSent($dataRow , $relationshipName))
+        {
+            /**
+             * It will be handled if its data sent with request only
+             */
+            $relationshipRows = $this->getRelationshipRequestData($dataRow ,$relationshipName);
+            $this->OwnedRelationshipRowsChildClassHandling($model , $relationship , $relationshipRows );
+        }
         return $this;
     }
 

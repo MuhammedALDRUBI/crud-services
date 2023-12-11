@@ -56,29 +56,32 @@ abstract class RelationshipsHandler
         return $this->validationManager;
     }
 
-    protected function isItMultiRowedArray(mixed $array): bool
-    {
-        return Arr::isList($array) && is_array(Arr::first($array));
-    }
-
-    protected function getRelationshipRequestDataArray(array $dataRow ,string $relationship ) : array | null
-    {
-        if(array_key_exists($relationship , $dataRow) && is_array($dataRow[$relationship]) )
-        {
-            return $dataRow[$relationship];
-        }
-        return null;
-    }
-
     protected function getRelationshipModelInstance(Model $model , string $relationship , array $dataArrayToSet = []) : Model
     {
         return $model->{$relationship}()->make($dataArrayToSet);
     }
 
-    protected function getRelationshipRequestData(array $dataRow, string $relationship) : array | null
+    protected function checkIfRelationshipDataSent(array $dataRow, string $relationshipName) : bool
     {
-        $RelationshipRequestDataArray = $this->getRelationshipRequestDataArray($dataRow, $relationship);
-        if(!$RelationshipRequestDataArray){ return [];}
+        return array_key_exists($relationshipName , $dataRow) ;
+    }
+
+    protected function isItMultiRowedArray(mixed $array): bool
+    {
+        return Arr::isList($array) && is_array(Arr::first($array));
+    }
+
+    protected function getRelationshipRequestDataArray(array $dataRow ,string $relationshipName ) : array
+    {
+        if($this->checkIfRelationshipDataSent($dataRow , $relationshipName) && is_array($dataRow[$relationshipName]) )
+        {
+            return $dataRow[$relationshipName] ;
+        }
+        return [];
+    }
+    protected function getRelationshipRequestData(array $dataRow, string $relationshipName) : array | null
+    {
+        $RelationshipRequestDataArray = $this->getRelationshipRequestDataArray($dataRow, $relationshipName);
         return $this->isItMultiRowedArray($RelationshipRequestDataArray) ? $RelationshipRequestDataArray : [$RelationshipRequestDataArray];
     }
 

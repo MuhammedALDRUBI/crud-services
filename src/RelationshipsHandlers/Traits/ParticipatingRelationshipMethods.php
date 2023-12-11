@@ -57,8 +57,14 @@ trait ParticipatingRelationshipMethods
      */
     protected function HandleParticipatingRelationshipRows( Model $model , ParticipatingRelationshipComponent $relationship , array $dataRow ) : self
     {
-        $ParticipatingRelationshipMultipleRows = $this->getParticipatingRelationshipRows($dataRow , $relationship , $model);
-        $this->ParticipatingRelationshipRowsChildClassHandling($model , $relationship ,$ParticipatingRelationshipMultipleRows );
+        if($this->checkIfRelationshipDataSent($dataRow , $relationship->getRelationshipName()))
+        {
+            /**
+             * It will be handled if its data sent with request only
+             */
+            $ParticipatingRelationshipMultipleRows = $this->getParticipatingRelationshipRows($dataRow , $relationship , $model);
+            $this->ParticipatingRelationshipRowsChildClassHandling($model , $relationship ,$ParticipatingRelationshipMultipleRows );
+        }
         return $this;
     }
     protected function IsParticipatingRelationshipComponent($relationship) : bool
