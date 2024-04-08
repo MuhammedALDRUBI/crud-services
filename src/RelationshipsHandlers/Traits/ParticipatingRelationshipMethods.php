@@ -28,7 +28,6 @@ trait ParticipatingRelationshipMethods
             }
         }
         $arrayToOverride[$foreignColumnValue] = $pivotColumnsValues;
-        dd($arrayToOverride);
         return  $arrayToOverride ;
     }
 
