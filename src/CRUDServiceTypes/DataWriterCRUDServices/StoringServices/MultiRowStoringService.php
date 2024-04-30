@@ -6,6 +6,8 @@ use Exception;
 
 abstract class MultiRowStoringService extends StoringService
 {
+    protected array $createdModels = [];
+
     /**
      * @return string
      * The key used to wrap all rows must be inserted in the same time at multiple storing operation
@@ -26,6 +28,22 @@ abstract class MultiRowStoringService extends StoringService
     {
         $this->data = $this->data[ $this->getMultiRowArrayWrappingKey() ] ?? [];
     }
+    protected function archiveCreatedSingleModel()
+    {
+        $this->createdModels[] =  $this->Model;
+    }
+    protected function customizeSingleModel() : void
+    {
+        return ;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCreatedModels(): array
+    {
+        return $this->createdModels;
+    }
     /**
      * @param array $dataRow
      * @return StoringService
@@ -37,6 +55,8 @@ abstract class MultiRowStoringService extends StoringService
         foreach ($this->data as $row)
         {
             parent::createConveniently($row);
+            $this->customizeSingleModel();
+            $this->archiveCreatedSingleModel();
         }
         //If No Exception Is Thrown => The Given Rows Are Created
         return $this;
