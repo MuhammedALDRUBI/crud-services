@@ -264,13 +264,13 @@ class RelationshipsUpdatingHandler extends RelationshipsHandler
     /**
      * @param Model $model
      * @param ParticipatingRelationshipComponent $relationship
-     * @param array $ParticipatingRelationshipMultipleRows
+     * @param array $ParticipatingRelationshipFinalData
      * @return bool
      * @throws Exception
      */
-    protected function ParticipatingRelationshipRowsChildClassHandling(Model $model, ParticipatingRelationshipComponent $relationship , array $ParticipatingRelationshipMultipleRows): bool
+    protected function ParticipatingRelationshipRowsChildClassHandling(Model $model, ParticipatingRelationshipComponent $relationship , array $ParticipatingRelationshipFinalData): bool
     {
-        $model->{$relationship->getRelationshipName()}()->sync( $ParticipatingRelationshipMultipleRows );
+        $model->{$relationship->getRelationshipName()}()->sync( $ParticipatingRelationshipFinalData );
         return true;
     }
 }

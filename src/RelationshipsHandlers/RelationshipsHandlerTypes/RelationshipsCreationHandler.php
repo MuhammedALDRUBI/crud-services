@@ -38,9 +38,9 @@ class RelationshipsCreationHandler extends RelationshipsHandler
     /**
      * @throws Exception
      */
-    protected function ParticipatingRelationshipRowsChildClassHandling(Model $model , ParticipatingRelationshipComponent $relationship  , array $ParticipatingRelationshipMultipleRows ): bool
+    protected function ParticipatingRelationshipRowsChildClassHandling(Model $model , ParticipatingRelationshipComponent $relationship  , array $ParticipatingRelationshipFinalData ): bool
     {
-        $model->{$relationship->getRelationshipName()}()->attach( $ParticipatingRelationshipMultipleRows );
+        $model->{$relationship->getRelationshipName()}()->attach( $ParticipatingRelationshipFinalData );
         return true;
     }
 }

@@ -70,6 +70,10 @@ abstract class RelationshipsHandler
     {
         return Arr::isList($array) && is_array(Arr::first($array));
     }
+    protected function convertToMultipleArray(array $array) : array
+    {
+        return $this->isItMultiRowedArray($array) ? $array : [$array];
+    }
 
     protected function getRelationshipRequestDataArray(array $dataRow ,string $relationshipName ) : array
     {
@@ -82,7 +86,7 @@ abstract class RelationshipsHandler
     protected function getRelationshipRequestData(array $dataRow, string $relationshipName) : array | null
     {
         $RelationshipRequestDataArray = $this->getRelationshipRequestDataArray($dataRow, $relationshipName);
-        return $this->isItMultiRowedArray($RelationshipRequestDataArray) ? $RelationshipRequestDataArray : [$RelationshipRequestDataArray];
+        return $this->convertToMultipleArray($RelationshipRequestDataArray);
     }
 
     static public function DoesItOwnRelationships( Model $model ): bool

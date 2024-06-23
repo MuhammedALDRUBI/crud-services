@@ -10,23 +10,29 @@ use Exception;
 
 trait ParticipatingRelationshipMethods
 {
-    abstract protected function ParticipatingRelationshipRowsChildClassHandling(Model $model , ParticipatingRelationshipComponent $relationship ,array $ParticipatingRelationshipMultipleRows ) : bool;
+    abstract protected function ParticipatingRelationshipRowsChildClassHandling(Model $model , ParticipatingRelationshipComponent $relationship ,array $ParticipatingRelationshipFinalData ) : bool;
 
 
-    protected function getParticipatingRelationshipRow(array $dataRow , string $foreignColumnName , array $pivotColumns , array $arrayToOverride = []) : array
+    protected function getParticipatingRelationshipForeignIDsIndexedArray(array $RelationshipRequestData) : array
     {
+        return array_filter($RelationshipRequestData ,function($id)
+        {
+            return is_numeric( $id );
+        });
+    }
+    protected function appendParsedParticipatingRelationshipRow(array $dataRow ,  ParticipatingRelationshipComponent $relationship , array $arrayToOverride = []) : array
+    {
+        $foreignColumnName = $relationship->getForeignKeyName() ;
         if(!array_key_exists($foreignColumnName , $dataRow)){return $arrayToOverride;}
 
         $foreignColumnValue = $dataRow[$foreignColumnName];
         $pivotColumnsValues = [];
 
-        foreach ($pivotColumns as $column)
+        foreach ( $relationship->getPivotColumns() as $column)
         {
-            if(array_key_exists( $column , $dataRow))
-            {
-                $pivotColumnsValues[$column] = $dataRow[$column];
-            }
+            $pivotColumnsValues[$column] = $dataRow[$column] ?? null;
         }
+
         $arrayToOverride[$foreignColumnValue] = $pivotColumnsValues;
         return  $arrayToOverride ;
     }
@@ -34,18 +40,32 @@ trait ParticipatingRelationshipMethods
     /**
      * @throws Exception
      */
-    protected function getParticipatingRelationshipRows(array $dataRow , ParticipatingRelationshipComponent $relationship , Model $model) : array | null
+    protected function getParticipatingRelationshipForeignIDsAssocArray(array $RelationshipRequestData , ParticipatingRelationshipComponent $relationship) : array
     {
         $rows = [];
-
-        $RelationshipDataRows = $this->getRelationshipRequestData( $dataRow ,    $relationship->getRelationshipName());
-
-        foreach ($RelationshipDataRows as $dataRow)
+        $RelationshipDataRows = $this->convertToMultipleArray( $RelationshipRequestData );
+        foreach ($RelationshipDataRows as $row)
         {
-            $this->validateRelationshipSingleRowKeys($dataRow , $relationship);
-            $rows = $this->getParticipatingRelationshipRow($dataRow , $relationship->getForeignKeyName() , $relationship->getPivotColumns() , $rows);
+            $this->validateRelationshipSingleRowKeys($row , $relationship);
+            $rows = $this->appendParsedParticipatingRelationshipRow($row , $relationship  , $rows);
         }
         return $rows;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function getParticipatingRelationshipFinalData(array $dataRow , ParticipatingRelationshipComponent $relationship ) : array | null
+    {
+        $RelationshipRequestData = $this->getRelationshipRequestDataArray($dataRow , $relationship->getRelationshipName());
+
+        if(  $relationship->hasPivotColumns()  )
+        {
+            return $this->getParticipatingRelationshipForeignIDsAssocArray($RelationshipRequestData , $relationship);
+        }
+
+        return $this->getParticipatingRelationshipForeignIDsIndexedArray($RelationshipRequestData);
+
     }
 
     /**
@@ -62,8 +82,8 @@ trait ParticipatingRelationshipMethods
             /**
              * It will be handled if its data sent with request only
              */
-            $ParticipatingRelationshipMultipleRows = $this->getParticipatingRelationshipRows($dataRow , $relationship , $model);
-            $this->ParticipatingRelationshipRowsChildClassHandling($model , $relationship ,$ParticipatingRelationshipMultipleRows );
+            $ParticipatingRelationshipFinalData = $this->getParticipatingRelationshipFinalData($dataRow , $relationship);
+            $this->ParticipatingRelationshipRowsChildClassHandling($model , $relationship ,$ParticipatingRelationshipFinalData );
         }
         return $this;
     }

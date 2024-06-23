@@ -5,6 +5,7 @@ namespace CRUDServices\CRUDComponents\CRUDRelationshipComponents;
 class   ParticipatingRelationshipComponent extends RelationshipComponent
 {
     protected array $pivotColumns = [];
+    protected bool $hasPivotColumns = false;
 
 
     public static function create(string $relationshipName , string $foreignKeyName = "" ) : ParticipatingRelationshipComponent
@@ -12,6 +13,10 @@ class   ParticipatingRelationshipComponent extends RelationshipComponent
         return new static($relationshipName  , $foreignKeyName);
     }
 
+    public function hasPivotColumns() : bool
+    {
+        return $this->hasPivotColumns;
+    }
     /**
      * @param array $pivotColumns
      * @return ParticipatingRelationshipComponent
@@ -19,6 +24,7 @@ class   ParticipatingRelationshipComponent extends RelationshipComponent
     public function setPivotColumns(array $pivotColumns): ParticipatingRelationshipComponent
     {
         $this->pivotColumns = $pivotColumns;
+        $this->hasPivotColumns = true;
         return $this;
     }
 
