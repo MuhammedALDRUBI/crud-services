@@ -25,7 +25,7 @@ trait FilesInfoValidationMethods
         if(is_null($this->dataRow[$RequestKeyName] ))
         {
             $this->initOldFilesDeletingHandler()->prepareModelOldFilesToDelete($this->model , [$fileInfoArray]);
-            $this->setDataRowFileOriginalName($RequestKeyName , null);
+            $this->resetDeletedFileDataRowMetaData($RequestKeyName);
             return false;
         }
         return true;

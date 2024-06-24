@@ -39,12 +39,43 @@ class FilesUploadingHandler extends FilesHandler
     }
 
 
+    protected function setDataRowFileSize(string $RequestKeyName , $value) : void
+    {
+        $this->dataRow[$RequestKeyName . "_size"] = $value;
+    }
+    protected function setDataRowFileMimeType(string $RequestKeyName , $value) : void
+    {
+        $this->dataRow[$RequestKeyName . "_mimetype"] = $value;
+    }
     protected function setDataRowFileOriginalName(string $RequestKeyName , $value) : void
     {
         $this->dataRow[$RequestKeyName . "_original"] = $value;
     }
 
-
+    protected function resetDeletedFileDataRowMetaData(string $RequestKeyName  ) : void
+    {
+        $this->setDataRowFileOriginalName($RequestKeyName , null);
+        $this->setDataRowFileMimeType($RequestKeyName , null);
+        $this->setDataRowFileSize($RequestKeyName , null);
+    }
+    protected function setUploadedFileDataRowMetaData(string $RequestKeyName , array $fileInfo ) : void
+    {
+        /**
+         * We Need To Change (( FileName )) in dataRow Manually Because CustomFileUploader updates dataRow Array with the (( fileRelevantPath ))
+         * Which Is Not Desired To Be Stored In DB
+         */
+        $this->dataRow[$RequestKeyName] = $fileInfo["fileName"];
+        if(!$fileInfo["multipleUploading"])
+        {
+            /**
+             * When Uploading is Multiple Uploading .... Files Original Names Will set As The Key Of Each File Value Found in Path JSON Object
+             * So We Need To Set File's Original name As A new Data Key Only In Single File Uploading Situation
+             */
+            $this->setDataRowFileOriginalName($RequestKeyName , $fileInfo["fileName_original"]);
+            $this->setDataRowFileMimeType($RequestKeyName , $fileInfo["fileName_mimetype"]);
+            $this->setDataRowFileSize($RequestKeyName , $fileInfo["fileName_size"]);
+        }
+    }
     protected function initOldFilesDeletingHandler() : OldFilesDeletingHandler
     {
         if(!$this->oldFilesDeletingHandler){$this->oldFilesDeletingHandler = OldFilesDeletingHandler::singleton();}
@@ -61,19 +92,7 @@ class FilesUploadingHandler extends FilesHandler
         /** Setting File To CustomFileUploader Uploading Queue To Upload it later when all data operation is done */
         $this->addFileToUploadingQueue( $RequestKeyName , $fileInfo["FolderName"] , $fileInfo["filePath"] , $fileInfo["multipleUploading"]);
 
-        /**
-         * We Need To Change (( FileName )) in dataRow Manually Because CustomFileUploader updates dataRow Array with the (( fileRelevantPath ))
-         * Which Is Not Desired To Be Stored In DB
-         */
-        $this->dataRow[$RequestKeyName] = $fileInfo["fileName"];
-        if(!$fileInfo["multipleUploading"])
-        {
-            /**
-             * When Uploading is Multiple Uploading .... Files Original Names Will set As The Key Of Each File Value Found in Path JSON Object
-             * So We Need To Set File's Original name As A new Data Key Only In Single File Uploading Situation
-             */
-            $this->setDataRowFileOriginalName($RequestKeyName , $fileInfo["fileName_original"]);
-        }
+        $this->setUploadedFileDataRowMetaData($RequestKeyName , $fileInfo);
     }
 
 
@@ -103,7 +122,7 @@ class FilesUploadingHandler extends FilesHandler
             $this->prepareFileToUpload($fileInfo);
         }
 
-        /** dataRow Is Updated On This Point ... it Contains The Required File Names To Store In DB by Model's Save Method */
+        /** dataRow Is Updated At This Point ... it Contains The Required File Names To Store In DB by Model's Save Method */
         return $model->fill($this->dataRow);
     }
 

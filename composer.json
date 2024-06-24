@@ -14,7 +14,7 @@
     "laravel/framework": "^8.75",
     "muhammedaldrubi/authorization-management": "^1.0",
     "muhammedaldrubi/validator-lib": "^1.0",
-    "muhammedaldrubi/custom-file-system": "^1.0",
+    "muhammedaldrubi/custom-file-system": "^1.0.3",
     "muhammedaldrubi/file-info-data-manager": "^1.0"
   },
   "autoload" : {

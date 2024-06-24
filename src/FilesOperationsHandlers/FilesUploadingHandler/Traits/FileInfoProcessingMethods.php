@@ -56,11 +56,38 @@ trait FileInfoProcessingMethods
      * @param UploadedFile $file
      * @return string
      */
+    protected function getUploadedFileMimeType(UploadedFile $file) : string
+    {
+        return $this->customFileUploader->getUploadedFileMimeType($file);
+    }
+
+    protected function setUploadedFileMimeType(UploadedFile $file , array $fileInfo = []) : array
+    {
+        $fileInfo["fileName_mimetype"] = $this->getUploadedFileMimeType($file);
+        return $fileInfo;
+    }
+    /**
+     * @param UploadedFile $file
+     * @return string
+     */
+    protected function getUploadedFileSize(UploadedFile $file) : string
+    {
+        return $this->customFileUploader->getUploadedFileSize($file);
+    }
+    protected function setUploadedFileSize(UploadedFile $file , array $fileInfo = []) : array
+    {
+        $fileInfo["fileName_size"] = $this->getUploadedFileSize($file);
+        return $fileInfo;
+    }
+
+    /**
+     * @param UploadedFile $file
+     * @return string
+     */
     protected function getUploadedFileOriginalName(UploadedFile $file) : string
     {
         return $this->customFileUploader->getUploadedFileOriginalName($file);
     }
-
     protected function getSingleUploadingFileName(UploadedFile $uploadedFile , array $fileInfo )  : array
     {
         $fileOldName = $this->getFileOldName( $fileInfo["ModelPathPropName"] );
@@ -109,6 +136,8 @@ trait FileInfoProcessingMethods
         }
 
         $fileInfo = $this->getSingleUploadingFileName($uploadedFile , $fileInfo);
+        $fileInfo = $this->setUploadedFileSize($uploadedFile , $fileInfo);
+        $fileInfo = $this->setUploadedFileMimeType($uploadedFile , $fileInfo);
         return $this->setSingleFilePathForUploading($fileInfo);
     }
 
