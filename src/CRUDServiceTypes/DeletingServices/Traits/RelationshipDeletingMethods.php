@@ -11,15 +11,15 @@ use Illuminate\Support\Collection;
 trait RelationshipDeletingMethods
 {
 
-    protected function getModelRelationshipModels(OwnedRelationshipComponent $relationship ) : Collection
+    protected function getModelRelationshipModels(Model $model , OwnedRelationshipComponent $relationship ) : Collection
     {
-        $relationshipModels = $this->Model->{$relationship->getRelationshipName()};
+        $relationshipModels = $model->{$relationship->getRelationshipName()};
         return $this->convertToCollection( $relationshipModels );
     }
 
-    protected function prepareModelRelationshipFilesToDelete(OwnedRelationshipComponent $relationship) : void
+    protected function prepareModelRelationshipFilesToDelete(Model $model , OwnedRelationshipComponent $relationship) : void
     {
-        foreach ($this->getModelRelationshipModels($relationship) as $relationshipModel)
+        foreach ($this->getModelRelationshipModels($model , $relationship) as $relationshipModel)
         {
             $this->prepareModelFilesToDelete($relationshipModel);
 
@@ -37,7 +37,7 @@ trait RelationshipDeletingMethods
                 /** @var OwnedRelationshipComponent $relationship */
                 if( $relationship->IsAllowedToCascadeParentDeleting() )
                 {
-                    $this->prepareModelRelationshipFilesToDelete($relationship);
+                    $this->prepareModelRelationshipFilesToDelete($model , $relationship);
                 }
             }
         }
