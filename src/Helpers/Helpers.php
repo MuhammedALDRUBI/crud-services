@@ -8,10 +8,7 @@ use Illuminate\Support\MessageBag;
 
 class Helpers
 {
-    /**
-     * @return string
-     * @throws Exception
-     */
+
     static public function getExceptionClass() : string
     {
         $customExceptionClass = ConfigManager::Singleton()->getValue("custom_exception_class");
@@ -20,4 +17,9 @@ class Helpers
                : Exception::class;
     }
 
+    static public function throwException(string $message ) : void
+    {
+        $exceptionClass = Helpers::getExceptionClass();
+        throw new $exceptionClass($message);
+    }
 }

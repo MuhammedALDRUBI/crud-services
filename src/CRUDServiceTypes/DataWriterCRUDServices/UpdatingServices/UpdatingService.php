@@ -47,8 +47,7 @@ abstract class UpdatingService extends DataWriterCRUDService
 
         if(!$this->Model->save())
         {
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass($this->getModelUpdatingFailingErrorMessage());
+            Helpers::throwException( $this->getModelUpdatingFailingErrorMessage());
         }
         return $this->HandleModelRelationships($this->data , $this->Model);
     }

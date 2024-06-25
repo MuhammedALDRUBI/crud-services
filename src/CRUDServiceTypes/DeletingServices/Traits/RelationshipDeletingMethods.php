@@ -7,31 +7,21 @@ use CRUDServices\RelationshipsHandlers\RelationshipsHandler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
+
 trait RelationshipDeletingMethods
 {
+
     protected function getModelRelationshipModels(OwnedRelationshipComponent $relationship ) : Collection
     {
-        $relationshipRows = $this->Model->{$relationship->getRelationshipName()};
-        if($relationshipRows instanceof Model)
-        {
-            return collect()->add($relationshipRows);
-        }
-
-        if($relationshipRows instanceof Collection)
-        {
-            return $relationshipRows->filter(function($row)
-            {
-                return $row instanceof Model;
-            });
-        }
-        return collect();
+        $relationshipModels = $this->Model->{$relationship->getRelationshipName()};
+        return $this->convertToCollection( $relationshipModels );
     }
 
     protected function prepareModelRelationshipFilesToDelete(OwnedRelationshipComponent $relationship) : void
     {
         foreach ($this->getModelRelationshipModels($relationship) as $relationshipModel)
         {
-            $this->initFilesDeleter()->prepareModelOldFilesToDelete($relationshipModel);
+            $this->prepareModelFilesToDelete($relationshipModel);
 
             /**  Recall the method to handle the sub relationship models */
             $this->prepareOwnedRelationshipFilesToDelete($relationshipModel);

@@ -13,7 +13,7 @@ trait OldFilesInfoManagerMethods
      * Must Be Like :
      * [ "fileName" => "fileRelevantPath" ]
      */
-    public array $filesToDelete = [];
+    protected array $filesToDelete = [];
 
     protected ?OldFilesInfoManager $oldFilesInfoManager = null;
     protected function initOldFilesInfoManager() : OldFilesInfoManager

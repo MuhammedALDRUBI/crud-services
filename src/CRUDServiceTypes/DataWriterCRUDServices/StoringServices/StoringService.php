@@ -34,8 +34,7 @@ abstract class StoringService extends DataWriterCRUDService
         $ModelClass = $this->getModelClass();
         if (!class_exists($ModelClass))
         {
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass("The Given Model Class " . $ModelClass . " Is Not defined !");
+            Helpers::throwException("The Given Model Class " . $ModelClass . " Is Not defined !");
         }
 
         $this->ModelClass = $ModelClass;

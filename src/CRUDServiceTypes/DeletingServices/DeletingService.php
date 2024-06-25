@@ -11,6 +11,7 @@ use CRUDServices\Traits\CRUDCustomisationGeneralHooks;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,10 @@ use Illuminate\Database\Eloquent\Model;
 abstract class DeletingService extends CRUDService
 {
     use CRUDCustomisationGeneralHooks , RelationshipDeletingMethods , DeletingServiceCustomHooks;
+    protected Collection  $modelsToDelete  ;
+
+    protected array $modelSetDeletingMap = [];
+    protected array $modelDeletedAtColumns = [];
 
     abstract protected function getModelDeletingSuccessMessage() : string;
 
@@ -26,12 +31,51 @@ abstract class DeletingService extends CRUDService
         return  "Can't delete this record ... It is used in the system or it is in the progress !" ;
     }
 
-    public function __construct($model)
+    public function __construct(Collection | Model $modelsToDelete)
     {
         parent::__construct();
-        $this->setModel($model);
+        $this->setModelsToDelete($modelsToDelete);
     }
 
+    protected function convertToCollection( Collection|Model|null $modelOrCollection = null ) : Collection
+    {
+        if($modelOrCollection instanceof Model)
+        {
+            return collect()->add($modelOrCollection);
+        }
+
+        if($modelOrCollection instanceof Collection)
+        {
+            return $modelOrCollection->filter(function($object)
+            {
+                return $object instanceof Model;
+            });
+        }
+        return collect();
+    }
+    /**
+     * @param Model|Collection $modelsToDelete
+     * @return $this
+     */
+    public function setModelsToDelete(Model|Collection $modelsToDelete): self
+    {
+        $this->modelsToDelete = $this->convertToCollection( $modelsToDelete );
+        return $this;
+    }
+
+    protected function mapModelKeysToDelete(Model $model) : void
+    {
+        $mappingKey = get_class($model);
+        $modelKey =  $model->getKey()  ;
+
+        if(array_key_exists($mappingKey , $this->modelSetDeletingMap))
+        {
+            $this->modelSetDeletingMap[ $mappingKey ]["keys"][] = $modelKey;
+            return;
+        }
+
+        $this->modelSetDeletingMap[ $mappingKey ] = ["keyName" => $model->getKeyName() , "keys" => [ $modelKey ] ];
+    }
     protected function initFilesDeleter() : OldFilesDeletingHandler
     {
         if(!$this->filesHandler){$this->filesHandler = OldFilesDeletingHandler::singleton();}
@@ -56,32 +100,84 @@ abstract class DeletingService extends CRUDService
 
         return Response::error( [ $exception->getMessage()]);
     }
+
+    protected function deleteMappedModelsSoftly() : bool
+    {
+        foreach ($this->modelSetDeletingMap as $modelClass => $keyInfo)
+        {
+            $modelDeletedAtColumn = $this->modelDeletedAtColumns[ $modelClass ] ?? null;
+            if(! $modelDeletedAtColumn) { return false; }
+
+            $softDeletingResult = $modelClass::whereIn( $keyInfo["keyName"] , $keyInfo["keys"] )->update( [ $modelDeletedAtColumn => now()  ] );
+            if( !$softDeletingResult ) { return  false;}
+        }
+
+        return true;
+    }
+    protected function getModelDeletedAtColumn(Model $model) : string
+    {
+        return $model->getDeletedAtColumn();
+    }
+
+    protected function DoesItApplySoftDeleting(Model $model) : bool
+    {
+        return method_exists( $model , 'getDeletedAtColumn' );
+    }
+    protected function mapDeletedAtColumnName(Model $model) : void
+    {
+        if($this->DoesItApplySoftDeleting($model))
+        {
+            $this->modelDeletedAtColumns[ get_class($model) ] = $this->getModelDeletedAtColumn( $model );
+        }
+    }
+
     /**
      * @return $this
      * @throws Exception
      */
     protected function deleteSoftly() : self
     {
-        if(!$this->Model->delete())
+        foreach ($this->modelsToDelete as $model)
         {
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass($this->getModelDeletingFailingErrorMessage());
+            $this->mapModelKeysToDelete($model);
+            $this->mapDeletedAtColumnName($model);
+        }
+
+        if(!$this->deleteMappedModelsSoftly())
+        {
+            Helpers::throwException( $this->getModelDeletingFailingErrorMessage());
         }
         return $this;
     }
 
+
+    protected function forceDeleteMappedModels() : bool
+    {
+        foreach ($this->modelSetDeletingMap as $modelClass => $keyInfo)
+        {
+            if(! $modelClass::whereIn( $keyInfo["keyName"] , $keyInfo["keys"] )->delete() )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      * @return void
      * @throws Exception
      */
     protected function forceDelete() : void
     {
-        $this->prepareModelFilesToDelete($this->Model);
-        $this->prepareOwnedRelationshipFilesToDelete($this->Model);
-        if(!$this->Model->forceDelete())
+        foreach ($this->modelsToDelete as $model)
         {
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass($this->getModelDeletingFailingErrorMessage());
+            $this->prepareModelFilesToDelete($model);
+            $this->prepareOwnedRelationshipFilesToDelete($model);
+            $this->mapModelKeysToDelete($model);
+        }
+
+        if( !$this->forceDeleteMappedModels() )
+        {
+            Helpers::throwException($this->getModelDeletingFailingErrorMessage());
         }
     }
 
@@ -109,8 +205,7 @@ abstract class DeletingService extends CRUDService
     {
         if( !$this->checkDeletingAdditionalConditions() )
         {
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass($this->getModelDeletingFailingErrorMessage());
+            Helpers::throwException( $this->getModelDeletingFailingErrorMessage() );
         }
     }
 

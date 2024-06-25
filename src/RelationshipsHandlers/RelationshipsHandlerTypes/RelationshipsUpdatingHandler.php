@@ -90,8 +90,8 @@ class RelationshipsUpdatingHandler extends RelationshipsHandler
             if(
                 $this->ModelClass::whereIn($this->primaryColumnName , $deletedModelKeyValues)->delete()
             ){return true;}
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass("Failed To Delete old Models");
+
+            Helpers::throwException( "Failed To Delete old Models");
         }
         return true;
     }
@@ -110,8 +110,7 @@ class RelationshipsUpdatingHandler extends RelationshipsHandler
         $model = $this->ModelFilesHandling($model , $data);
         if(!$model->save())
         {
-            $exceptionClass = Helpers::getExceptionClass();
-            throw new $exceptionClass("Failed To Update Relationship Entry !");
+            Helpers::throwException( "Failed To Update Relationship Entry !");
         }
         $this->HandleModelRelationships( $data ,  $model);
         return true;

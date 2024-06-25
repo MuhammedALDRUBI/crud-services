@@ -8,8 +8,6 @@ trait FileInfoProcessingMethods
     {
             $fileInfo = $this->setMultiUploadingValue($fileInfo);
             $fileInfo = $this->setModelPathPropNameValue($fileInfo);
-            if($fileInfo){  $fileInfo = $this->setFolderName($fileInfo); }
-            if(!$fileInfo){return null;}
-            return $fileInfo;
+            return  $this->setFolderName($fileInfo);
     }
 }
