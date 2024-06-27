@@ -81,7 +81,11 @@ trait OwnedRelationshipMethods
         if($this->checkIfRelationshipDataSent($dataRow , $relationshipName))
         {
             /**
-             * It will be handled if its data sent with request only
+             * @TODO edit it to do this if condition just for creating a new relationship ... because getRelationshipRequestData returns an empty array if the relationship data isn't sent
+             * and must avoid creating an empty relationship row in creation case
+             */
+            /**
+             * It only will be handled if its data sent with request
              */
             $relationshipRows = $this->getRelationshipRequestData($dataRow ,$relationshipName);
             $this->OwnedRelationshipRowsChildClassHandling($model , $relationship , $relationshipRows );

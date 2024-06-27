@@ -6,23 +6,6 @@ class OwnedRelationshipComponent extends RelationshipComponent
 {
 
     protected array $updatingConditionColumns = [];
-    protected bool $parentDeletingCascading = true;
-
-    public function IsAllowedToCascadeParentDeleting() : bool
-    {
-        return $this->parentDeletingCascading;
-    }
-    public function disableParentDeletingCascading()  :OwnedRelationshipComponent
-    {
-        $this->parentDeletingCascading = true;
-        return $this;
-    }
-    public function enableParentDeletingCascading() : OwnedRelationshipComponent
-    {
-        $this->parentDeletingCascading = false;
-        return $this;
-    }
-
 
     public static function create(string $relationshipName , string $foreignKeyName) : OwnedRelationshipComponent
     {

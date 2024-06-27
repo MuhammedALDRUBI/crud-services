@@ -3,6 +3,7 @@
 namespace CRUDServices\CRUDServiceTypes\DeletingServices\Traits;
 
 use CRUDServices\CRUDComponents\CRUDRelationshipComponents\OwnedRelationshipComponent;
+use CRUDServices\Interfaces\OwnsRelationships;
 use CRUDServices\RelationshipsHandlers\RelationshipsHandler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -32,13 +33,10 @@ trait RelationshipDeletingMethods
     {
         if(RelationshipsHandler::DoesItOwnRelationships($model))
         {
+            /** @var OwnsRelationships $model  */
             foreach ($model->getOwnedRelationships() as $relationship )
             {
-                /** @var OwnedRelationshipComponent $relationship */
-                if( $relationship->IsAllowedToCascadeParentDeleting() )
-                {
                     $this->prepareModelRelationshipFilesToDelete($model , $relationship);
-                }
             }
         }
     }
