@@ -28,7 +28,7 @@ trait OldFilesInfoManagerMethods
         return $this;
     }
 
-    protected function restartOldFilesHandler() : bool
+    public function restartOldFilesHandler() : bool
     {
         $this->filesToDelete = [];
         return true;
